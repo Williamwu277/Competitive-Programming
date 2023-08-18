@@ -1,0 +1,59 @@
+#include <bits/stdc++.h>
+using namespace std;
+typedef long long ll;
+
+int N, Q, arr[1000005], psa[1000005];
+vector<pair<int, int>> queries;
+const ll MOD = 1e9+7, MAXN = 1e6, MINN = 3e3;
+
+ll fast_power(int base, int exp){
+    if(exp == 0) return 1;
+    ll res = fast_power(base, exp/2);
+    return res * res % MOD * (exp % 2 == 1 ? base : 1) % MOD;
+}
+
+void solution(){
+    for(int i=1; i<=N; i++){
+        psa[i] = psa[i-1] + (arr[i] % 2 == 1 ? 0 : 1);
+    }
+    for(int i=0; i<Q; i++){
+        int l = queries[i].first, r = queries[i].second;
+        int even = psa[r] - psa[l-1], odd = r-l+1 - even;
+        ll res = fast_power(2, even) * fast_power(2, odd-1) % MOD;
+        cout << res - 1 << "\n";
+    }
+}
+
+void slow(){
+    vector<ll> inv, pow;
+    inv.push_back(1); pow.push_back(1);
+    for(int i=1; i<=N; i++){
+        pow.push_back(pow[i-1] * i % MOD);
+        inv.push_back(fast_power(pow[i], MOD-2));
+    }
+    for(int i=0; i<Q; i++){
+        int l = queries[i].first, r = queries[i].second;
+        int even = psa[r] - psa[l-1], odd = r-l+1 - even;
+        ll res = 0;
+        for(int j=0; j<=odd; j+=2){
+            ll mod_inv = pow[odd] * inv[j] % MOD * inv[odd-j] % MOD;
+            res += fast_power(2, even) * mod_inv % MOD; res %= MOD;
+        }
+        cout << res - 1 << "\n";
+    }
+}
+
+int main(){
+    ios::sync_with_stdio(0); cin.tie(0);
+    cin >> N >> Q;
+    for(int i=1; i<=N; i++){
+        cin >> arr[i];
+    }
+    for(int i=1; i<=Q; i++){
+        int a, b; cin >> a >> b;
+        queries.push_back({a, b});
+    }
+    solution();
+}
+
+// https://dmoj.ca/problem/cheerio2p5
